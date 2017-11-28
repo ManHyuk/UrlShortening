@@ -1,11 +1,29 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
+    <title>hi</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+
+
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+  <div class="container" >
+
+    <form method="post" action="" >
+      <div class="form-group">
+        <label for="exampleInputEmail1">URL 입력</label>
+        <input type="text" class="form-control" id="exampleInputEmail1" placeholder="URL을 입력하세요" name="longUrl">
+      </div>
+      <button type="submit" class="btn btn-default">제출</button>
+    </form>
+
+
+  </div>
+
+
   </body>
 </html>
