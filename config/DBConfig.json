@@ -1,0 +1,8 @@
+{
+  "host" : "manhyukdb.c45s00q99srl.ap-northeast-2.rds.amazonaws.com",
+  "port" : 3306,
+  "user" : "manhyukDB",
+  "password" : "aksguraksgur",
+  "database" : "MOSAIC",
+  "connectionLimit" : 100
+}
