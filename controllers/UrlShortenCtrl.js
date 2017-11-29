@@ -42,14 +42,27 @@ const randomString = () => {
 exports.setShortening = async(req, res, next)=>{
 
   let result = '';
+  const longUrl = req.body.longUrl;
+
+  let temp ;
+  let shortUrl;
+
+
+  //TODO 난수 생성 함수로 옮기기
+  while (true){ // 난수 중복 검사
+      let data = randomString();
+      temp = await urlShortenModel.checkRandomString(data);
+      if (temp){
+        shortUrl = data;
+        break;
+      }
+  }
 
   try {
     const data = {
-      longUrl: req.body.longUrl,
-      shortUrl: randomString()
+      longUrl: longUrl,
+      shortUrl: shortUrl
     };
-
-    console.log(data);
     result = await urlShortenModel.setShortening(data)
 
   }catch (error){

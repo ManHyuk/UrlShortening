@@ -14,11 +14,10 @@ exports.setShortening = (data) => {
   return new Promise((resolve, reject) => {
     const sql =
       `
-      SELECT
-        longUrl
+      SELECT longUrl
       FROM urls
-        WHERE longUrl = ? 
-       `;
+      WHERE longUrl = ? 
+      `;
     pool.query(sql, [data.longUrl], (err, rows) => {
       if (err){
         reject(err);
@@ -43,9 +42,9 @@ exports.setShortening = (data) => {
       return new Promise((resolve, reject) => {
         const sql =
           `
-        INSERT INTO urls(longUrl, shortUrl)
-        VALUES (? , ?) 
-         `;
+          INSERT INTO urls(longUrl, shortUrl)
+          VALUES (? , ?) 
+          `;
         pool.query(sql,[data.longUrl,data.shortUrl],(err,rows) => {
           if (err){
             reject(err);
@@ -53,12 +52,12 @@ exports.setShortening = (data) => {
             if (rows.affectedRows === 0 ){ // Insert 실패시
               const _err = new Error("url insert Error");
               reject(_err);
-            } else {
+            } else { // insert 성공
               resolve(rows);
             }
           }
         });
-      }).then((prevResult) => {
+      }).then((prevResult) => { // 성공된 값의 인덱스를 가져와 Select
         return new Promise((resolve, reject) => {
           const sql =
             `
@@ -75,14 +74,13 @@ exports.setShortening = (data) => {
           })
         });
       });
-    } else{
+    } else{ // url이 이미 존재하는 경우
       return new Promise((resolve, reject) => {
         const sql =
           `
-          SELECT
-            longUrl, shortUrl
+          SELECT longUrl, shortUrl
           FROM urls
-            WHERE longUrl = ? 
+          WHERE longUrl = ? 
           `;
         pool.query(sql, [data.longUrl],(err, rows)=>{
           if(err){
@@ -96,6 +94,34 @@ exports.setShortening = (data) => {
   })
 };
 
+/***********
+ * 난수 중복 검사
+ * @param data
+ * @returns {Promise}
+ */
+exports.checkRandomString = (data) => {
+  return new Promise((resolve, reject) => {
+    const sql =
+      `
+      SELECT shortUrl
+      FROM urls
+      WHERE shortUrl = ?
+      `;
+    pool.query(sql, [data], (err, rows) => {
+      if(err){
+        reject(err);
+      } else {
+        if (rows.length === 0){ // 난수 중복 없음
+          resolve(true);
+        } else { // 난수 중복
+          resolve(false);
+        }
+      }
+    });
+  });
+};
+
+
 
 /******************8
  * short url으로 long url을 검색
@@ -106,10 +132,9 @@ exports.redirectUrl = (data) =>{
   return new Promise((resolve, reject) => {
     const sql =
       `
-        SELECT 
-          longUrl
-        FROM urls
-        WHERE shortUrl = ?      
+      SELECT longUrl
+      FROM urls
+      WHERE shortUrl = ?      
       `;
     pool.query(sql, data, (err, rows) => {
       if(err){
