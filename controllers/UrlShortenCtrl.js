@@ -75,16 +75,16 @@ exports.setShortening = async(req, res, next)=>{
   }
 
 
+
   // QR코드 생성 및 콜백에서 렌더
   QRCode.toDataURL(longUrl, (err, url) => {
-
     res.render('result',
       {
         longUrl: result.longUrl,
         shortUrl:  result .shortUrl,
         img: url,
-      });
-  });
+      });});
+
 
 };
 
