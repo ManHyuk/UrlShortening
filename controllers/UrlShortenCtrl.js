@@ -1,4 +1,5 @@
 'use strict';
+const QRCode = require('qrcode');
 
 const urlShortenModel = require('../models/UrlShortenModel');
 
@@ -42,20 +43,23 @@ const randomString = () => {
 exports.setShortening = async(req, res, next)=>{
 
   let result = '';
-  const longUrl = req.body.longUrl;
+  let longUrl = req.body.longUrl;
 
-  let temp ;
+  const lastChar = longUrl.charAt(longUrl.length-1);
+  if  (lastChar === '/'){  // longUrl 마지막에 '/'가 붙는다면 삭제
+    longUrl = longUrl.slice(0,-1);
+  }
+
   let shortUrl;
 
-
-  //TODO 난수 생성 함수로 옮기기
   while (true){ // 난수 중복 검사
-      let data = randomString();
-      temp = await urlShortenModel.checkRandomString(data);
-      if (temp){
-        shortUrl = data;
-        break;
-      }
+    let temp;
+    let data = randomString();
+    temp = await urlShortenModel.checkRandomString(data);
+    if (temp){
+      shortUrl = data;
+      break;
+    }
   }
 
   try {
@@ -70,11 +74,18 @@ exports.setShortening = async(req, res, next)=>{
     return next(error);
   }
 
-  res.render('result',
-    {
-      longUrl: result.longUrl,
-      shortUrl:  result .shortUrl
-    });
+
+  // QR코드 생성 및 콜백에서 렌더
+  QRCode.toDataURL(longUrl, (err, url) => {
+
+    res.render('result',
+      {
+        longUrl: result.longUrl,
+        shortUrl:  result .shortUrl,
+        img: url,
+      });
+  });
+
 };
 
 /*************

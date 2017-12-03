@@ -1,12 +1,10 @@
 const mysql = require('mysql');
 const DBConfig = require('./../config/DBConfig');
 const pool = mysql.createPool(DBConfig);
-const transactionWrapper = require('./TransactionWrapper');
 
 
 /**********
  * long url의 값이 있는지 확인후 저장
- * TODO 코드 중복제거, Promise 경고 제거
  * @param data
  * @returns {Promise.<TResult>}
  */
@@ -19,45 +17,40 @@ exports.setShortening = (data) => {
       WHERE longUrl = ? 
       `;
     pool.query(sql, [data.longUrl], (err, rows) => {
-      if (err){
+      if(err){
         reject(err);
       } else {
-        let data = {};
-        if (rows.length === 0 ){ // url이 존재하지 않는 경우
-          data = {
-            isNew: true
-          };
-          resolve(data);
-        } else { // url이 이미 존재하는 경우
-          data = {
-            rows: rows[0],
-            isNew: false
-          };
-          resolve(data);
+        let urlIsNew = false;
+        if (rows.length === 0 ) { // 디비에 저장된 longUrl이 없는경우
+          urlIsNew = true;
+          resolve(urlIsNew);
+        } else { // 디비에 저장된 longUrl값이 있는 경우
+          urlIsNew = false;
+          resolve(urlIsNew);
         }
       }
     });
-  }).then((prevResult) => {
-    if (prevResult.isNew === true) { // url이 존재하지 않는 경우
+  }).then((urlIsNew) => {
+    if (urlIsNew){ // urlIsNew가 true일 경우(저장된 longUrl이 없는경우)
       return new Promise((resolve, reject) => {
         const sql =
           `
           INSERT INTO urls(longUrl, shortUrl)
-          VALUES (? , ?) 
+          VALUES (? , ?)
           `;
-        pool.query(sql,[data.longUrl,data.shortUrl],(err,rows) => {
+        pool.query(sql, [data.longUrl, data.shortUrl], (err, rows) => {
           if (err){
             reject(err);
           } else {
-            if (rows.affectedRows === 0 ){ // Insert 실패시
-              const _err = new Error("url insert Error");
+            if (rows.affectedRows === 0 ){ // insert 실패
+              const _err = new Error("Insert Custom Error");
               reject(_err);
-            } else { // insert 성공
+            } else {
               resolve(rows);
             }
           }
         });
-      }).then((prevResult) => { // 성공된 값의 인덱스를 가져와 Select
+      }).then((prevResult) => {
         return new Promise((resolve, reject) => {
           const sql =
             `
@@ -71,19 +64,19 @@ exports.setShortening = (data) => {
             } else {
               resolve(rows[0]);
             }
-          })
+          });
         });
       });
-    } else{ // url이 이미 존재하는 경우
+    } else { // urlIsNew가 false일 경우(저장된 longUrl이 있는 경우)
       return new Promise((resolve, reject) => {
         const sql =
           `
           SELECT longUrl, shortUrl
           FROM urls
-          WHERE longUrl = ? 
+          WHERE longUrl = ?
           `;
-        pool.query(sql, [data.longUrl],(err, rows)=>{
-          if(err){
+        pool.query(sql, [data.longUrl], (err, rows) => {
+          if (err){
             reject(err);
           } else {
             resolve(rows[0]);
@@ -91,7 +84,7 @@ exports.setShortening = (data) => {
         });
       });
     }
-  })
+  });
 };
 
 /***********
